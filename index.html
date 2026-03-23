@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bank Account Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.2s;
+}
+
+input:focus {
+    border-color: #667eea;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #5a67d8;
+}
+
+.search-box {
+    margin: 15px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+th {
+    background: #667eea;
+    color: white;
+}
+
+tr:hover {
+    background: #f5f5f5;
+}
+
+.delete-btn {
+    background: #e53e3e;
+}
+
+.delete-btn:hover {
+    background: #c53030;
+}
+
+.empty {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🏦 Bank Account Manager</h2>
+
+    <!-- Form -->
+    <div class="form-group">
+        <input type="text" id="name" placeholder="Account Holder Name">
+        <input type="text" id="account" placeholder="Account Number">
+        <input type="text" id="ifsc" placeholder="IFSC Code">
+        <input type="text" id="bank" placeholder="Bank Name">
+        <button onclick="addAccount()">Add Account</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Search..." onkeyup="searchAccount()">
+    </div>
+
+    <!-- Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Account Number</th>
+                <th>IFSC</th>
+                <th>Bank</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script>
+let accounts = JSON.parse(localStorage.getItem("bank_accounts")) || [];
+
+// Load data
+window.onload = () => renderTable(accounts);
+
+// Save
+function saveData() {
+    localStorage.setItem("bank_accounts", JSON.stringify(accounts));
+}
+
+// Add
+function addAccount() {
+    const name = nameInput.value.trim();
+    const account = accountInput.value.trim();
+    const ifsc = ifscInput.value.trim();
+    const bank = bankInput.value.trim();
+
+    if (!name || !account || !ifsc || !bank) {
+        alert("Fill all fields");
+        return;
+    }
+
+    accounts.unshift({ name, account, ifsc, bank });
+    saveData();
+    renderTable(accounts);
+
+    nameInput.value = "";
+    accountInput.value = "";
+    ifscInput.value = "";
+    bankInput.value = "";
+}
+
+// Render
+function renderTable(data) {
+    const table = document.getElementById("tableBody");
+
+    if (data.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" class="empty">No accounts found</td></tr>`;
+        return;
+    }
+
+    table.innerHTML = data.map((acc, index) => `
+        <tr>
+            <td>${acc.name}</td>
+            <td>${acc.account}</td>
+            <td>${acc.ifsc}</td>
+            <td>${acc.bank}</td>
+            <td>
+                <button class="delete-btn" onclick="deleteAccount(${index})">Delete</button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+// Delete
+function deleteAccount(index) {
+    if (!confirm("Delete this account?")) return;
+
+    accounts.splice(index, 1);
+    saveData();
+    renderTable(accounts);
+}
+
+// Search
+function searchAccount() {
+    const q = search.value.toLowerCase();
+
+    const filtered = accounts.filter(acc =>
+        acc.name.toLowerCase().includes(q) ||
+        acc.account.toLowerCase().includes(q) ||
+        acc.ifsc.toLowerCase().includes(q) ||
+        acc.bank.toLowerCase().includes(q)
+    );
+
+    renderTable(filtered);
+}
+
+// Short refs
+const nameInput = document.getElementById("name");
+const accountInput = document.getElementById("account");
+const ifscInput = document.getElementById("ifsc");
+const bankInput = document.getElementById("bank");
+const search = document.getElementById("search");
+</script>
+
+</body>
+</html>
